@@ -95,7 +95,37 @@ body{font-family:'Cairo',sans-serif;background:#e2e8f0;direction:rtl;min-height:
 .island-action.go{background:var(--green);color:white;box-shadow:0 4px 0 var(--green-dark);}
 .island-action.go:active{transform:translateY(3px);box-shadow:0 1px 0 var(--green-dark);}
 
-/* ===== MY WORDS ===== */
+/* ===== SETS ===== */
+.sets-section{margin-top:18px;}
+.sets-section-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;}
+.sets-section-title{font-size:14px;font-weight:900;color:var(--dark);}
+.add-set-btn{display:flex;align-items:center;gap:5px;background:var(--blue);color:white;border:none;border-radius:20px;padding:5px 14px;font-size:12px;font-weight:800;cursor:pointer;font-family:'Cairo',sans-serif;}
+.set-card{background:linear-gradient(135deg,#f0fdf4,#dcfce7);border:2px solid var(--green);border-radius:16px;padding:14px;margin-bottom:10px;position:relative;}
+.set-card-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;}
+.set-card-name{font-size:15px;font-weight:900;color:var(--dark);}
+.set-card-count{font-size:12px;font-weight:700;color:var(--mid);}
+.set-card-del{background:var(--red-light);border:none;border-radius:8px;padding:4px 10px;font-size:12px;cursor:pointer;color:var(--red);font-weight:800;}
+.set-card-actions{display:flex;gap:6px;}
+.set-card-btn{flex:1;padding:8px 0;border:none;border-radius:10px;font-size:12px;font-weight:800;cursor:pointer;font-family:'Cairo',sans-serif;}
+.set-card-btn.quiz{background:var(--purple);color:white;}
+.set-card-btn.learn{background:var(--blue);color:white;}
+.set-card-btn.drill{background:var(--green);color:white;}
+
+/* SET MODAL */
+.set-modal-overlay{position:fixed;top:0;left:50%;transform:translateX(-50%);width:100%;max-width:480px;height:100%;background:rgba(0,0,0,.55);z-index:950;display:flex;align-items:flex-end;}
+.set-modal-box{background:#fff;border-radius:18px 18px 0 0;width:100%;max-height:88vh;overflow:hidden;display:flex;flex-direction:column;}
+.set-modal-head{padding:14px 16px;border-bottom:2px solid #e2e8f0;display:flex;align-items:center;justify-content:space-between;flex-shrink:0;}
+.set-modal-inputs{padding:10px 16px;border-bottom:1px solid #e2e8f0;flex-shrink:0;}
+.set-modal-inp{width:100%;padding:10px 12px;border:2px solid #e2e8f0;border-radius:10px;font-size:14px;font-weight:700;font-family:'Cairo',sans-serif;outline:none;box-sizing:border-box;}
+.set-modal-inp:focus{border-color:var(--blue);}
+.set-word-list{overflow-y:auto;flex:1;padding:4px 16px;}
+.set-word-item{display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid #f1f5f9;cursor:pointer;}
+.set-word-item input[type=checkbox]{width:20px;height:20px;accent-color:var(--blue);flex-shrink:0;cursor:pointer;}
+.set-word-en{font-size:15px;font-weight:800;color:var(--dark);direction:ltr;}
+.set-word-ar{font-size:12px;color:var(--blue);font-weight:600;}
+.set-modal-footer{padding:12px 16px;border-top:2px solid #e2e8f0;flex-shrink:0;}
+
+/* ===== END SETS ===== */ */
 .mywords-screen{padding:16px 16px 100px;}
 .mw-cats-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
 .mw-cat-card{background:var(--white);border-radius:16px;padding:16px;box-shadow:var(--shadow);border:2px solid #e2e8f0;cursor:pointer;position:relative;transition:.2s;}
@@ -615,10 +645,40 @@ function renderMwScreen() {
     </div>`;
   });
 
+  // Sets section
+  const allSets = loadSets();
+  let setsHTML = '';
+  if (allSets.length > 0) {
+    setsHTML = allSets.map(set => {
+      const wids = JSON.stringify(set.wordIds).replace(/"/g,'&quot;');
+      return `<div class="set-card">
+        <div class="set-card-header">
+          <div>
+            <div class="set-card-name">📌 ${set.name}</div>
+            <div class="set-card-count">${set.wordIds.length} كلمة</div>
+          </div>
+          <button class="set-card-del" onclick="deleteSet('${set.id}')">🗑 مسح</button>
+        </div>
+        <div class="set-card-actions">
+          <button class="set-card-btn quiz" onclick="startMwQuizSet('${set.id}')">Quiz</button>
+          <button class="set-card-btn learn" onclick="startMwLearnSet('${set.id}')">Learn</button>
+          <button class="set-card-btn drill" onclick="startMwDrillSet('${set.id}')">⚡ Drill</button>
+        </div>
+      </div>`;
+    }).join('');
+  }
+
   document.getElementById('content').innerHTML = `<div class="mywords-screen">
     ${dailyBanner}
     ${weakBanner}
-    <div class="mw-cats-grid">${grid}</div>
+    <div class="sets-section">
+      <div class="sets-section-header">
+        <div class="sets-section-title">📌 Sets المؤقتة</div>
+        <button class="add-set-btn" onclick="openCreateSetModal()">+ إنشاء Set</button>
+      </div>
+      ${setsHTML || `<div style="text-align:center;color:var(--mid);font-size:13px;font-weight:600;padding:10px 0;">مفيش Sets دلوقتي — اضغط "+ إنشاء Set"</div>`}
+    </div>
+    <div class="mw-cats-grid" style="margin-top:14px;">${grid}</div>
     ${allWords.length > 0 ? `<div style="margin-top:16px;">
       <div style="font-size:14px;font-weight:800;color:var(--dark);margin-bottom:10px;">📋 جميع الكلمات</div>
       ${allWords.map(w => renderMwWordRow(w)).join('')}
@@ -928,10 +988,109 @@ function _renderQuizStats() {
   </div>`;
 }
 
-// ---- LEARN MODE ----
-function startMwLearn(catId) {
+// ---- SETS ----
+function loadSets() {
+  try { return JSON.parse(localStorage.getItem('ep_sets') || '[]'); } catch(e) { return []; }
+}
+function saveSets(sets) {
+  try { localStorage.setItem('ep_sets', JSON.stringify(sets)); } catch(e) {}
+}
+function deleteSet(setId) {
+  if (!confirm('تمسح الـ Set دي؟')) return;
+  saveSets(loadSets().filter(s => s.id !== setId));
+  renderMwScreen();
+}
+function startMwQuizSet(setId) {
+  const set = loadSets().find(s => s.id === setId);
+  if (set) startMwQuiz(null, set.wordIds);
+}
+function startMwLearnSet(setId) {
+  const set = loadSets().find(s => s.id === setId);
+  if (set) startMwLearn(null, set.wordIds);
+}
+function startMwDrillSet(setId) {
+  const set = loadSets().find(s => s.id === setId);
+  if (set) startMwDrill(null, set.wordIds);
+}
+
+let _setAllWords = [];
+function openCreateSetModal() {
   loadMwData();
-  const words = catId ? mwData.words.filter(w => w.catId === catId) : [...mwData.words];
+  _setAllWords = [...mwData.words];
+  const modal = document.createElement('div');
+  modal.id = 'set-modal';
+  modal.className = 'set-modal-overlay';
+  modal.innerHTML = `
+    <div class="set-modal-box">
+      <div class="set-modal-head">
+        <div style="font-size:16px;font-weight:900;color:var(--dark);">📌 Set جديد</div>
+        <button onclick="closeSetModal()" style="background:none;border:none;font-size:22px;cursor:pointer;color:var(--mid);line-height:1;">✕</button>
+      </div>
+      <div class="set-modal-inputs">
+        <input id="set-name-inp" class="set-modal-inp" placeholder="اسم الـ Set..." style="margin-bottom:8px;direction:rtl;" />
+        <input id="set-search-inp" class="set-modal-inp" placeholder="🔍 ابحث بالإنجليزي أو العربي..." oninput="filterSetWords()" style="direction:ltr;" />
+        <div id="set-sel-count" style="font-size:12px;font-weight:700;color:var(--blue);margin-top:6px;text-align:center;">0 كلمة محددة</div>
+      </div>
+      <div id="set-word-list" class="set-word-list"></div>
+      <div class="set-modal-footer">
+        <button onclick="saveNewSet()" style="width:100%;padding:13px;background:var(--blue);color:white;border:none;border-radius:12px;font-size:15px;font-weight:800;cursor:pointer;font-family:'Cairo',sans-serif;">💾 حفظ الـ Set</button>
+      </div>
+    </div>`;
+  modal.addEventListener('click', e => { if (e.target === modal) closeSetModal(); });
+  document.body.appendChild(modal);
+  renderSetWordList(_setAllWords);
+}
+
+function renderSetWordList(words) {
+  const list = document.getElementById('set-word-list');
+  if (!list) return;
+  // preserve checked state
+  const checked = new Set([...document.querySelectorAll('#set-word-list input[type=checkbox]:checked')].map(c => c.dataset.id));
+  list.innerHTML = words.map(w => `
+    <label class="set-word-item">
+      <input type="checkbox" data-id="${w.id}" ${checked.has(w.id)?'checked':''} onchange="updateSetCount()" />
+      <div>
+        <div class="set-word-en">${w.word}</div>
+        <div class="set-word-ar">${w.translation}</div>
+      </div>
+    </label>`).join('');
+  updateSetCount();
+}
+
+function filterSetWords() {
+  const q = (document.getElementById('set-search-inp').value || '').toLowerCase();
+  const filtered = q ? _setAllWords.filter(w => w.word.toLowerCase().includes(q) || w.translation.includes(q)) : _setAllWords;
+  renderSetWordList(filtered);
+}
+
+function updateSetCount() {
+  const n = document.querySelectorAll('#set-word-list input[type=checkbox]:checked').length;
+  const el = document.getElementById('set-sel-count');
+  if (el) el.textContent = `${n} كلمة محددة`;
+}
+
+function saveNewSet() {
+  const name = (document.getElementById('set-name-inp').value || '').trim();
+  if (!name) { document.getElementById('set-name-inp').focus(); return; }
+  const wordIds = [...document.querySelectorAll('#set-word-list input[type=checkbox]:checked')].map(c => c.dataset.id);
+  if (wordIds.length === 0) { alert('اختار كلمة واحدة على الأقل'); return; }
+  const sets = loadSets();
+  sets.push({ id: mwId(), name, wordIds });
+  saveSets(sets);
+  closeSetModal();
+  renderMwScreen();
+}
+
+function closeSetModal() {
+  const m = document.getElementById('set-modal');
+  if (m) m.remove();
+}
+
+// ---- LEARN MODE ----
+function startMwLearn(catId, wordIds) {
+  loadMwData();
+  const words = wordIds ? mwData.words.filter(w => wordIds.includes(w.id))
+               : catId ? mwData.words.filter(w => w.catId === catId) : [...mwData.words];
   if (words.length === 0) { alert('لا يوجد كلمات في هذا التصنيف'); return; }
   mwState.currentScreen = 'learn';
   mwState.learnWords = shuffle([...words]);
@@ -982,9 +1141,10 @@ function renderMwLearnCard() {
 }
 
 // ---- QUIZ MODE ----
-function startMwQuiz(catId) {
+function startMwQuiz(catId, wordIds) {
   loadMwData();
-  const words = catId ? mwData.words.filter(w => w.catId === catId) : [...mwData.words];
+  const words = wordIds ? mwData.words.filter(w => wordIds.includes(w.id))
+               : catId ? mwData.words.filter(w => w.catId === catId) : [...mwData.words];
   if (words.length < 2) { alert('تحتاج على الأقل كلمتين لبدء الكويز'); return; }
   mwState.currentScreen = 'quiz';
   mwState.quizCatId = catId;
@@ -1129,9 +1289,10 @@ function startMwWeakDrill() {
   _startDrillUI(`🎯 الكلمات الضعيفة • ${weakWords.length}`);
 }
 
-function startMwDrill(catId) {
+function startMwDrill(catId, wordIds) {
   loadMwData();
-  const words = catId ? mwData.words.filter(w => w.catId === catId) : [...mwData.words];
+  const words = wordIds ? mwData.words.filter(w => wordIds.includes(w.id))
+               : catId ? mwData.words.filter(w => w.catId === catId) : [...mwData.words];
   if (words.length < 1) { alert('لا يوجد كلمات للتدريب'); return; }
   mwDrill.catId = catId; mwDrill.words = shuffle([...words]);
   mwDrill.idx = 0; mwDrill.lives = 5; mwDrill.score = 0;

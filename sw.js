@@ -1,5 +1,5 @@
 // نسخة الكاش — غيّر الرقم مع كل تحديث كبير
-const CACHE = 'mywords-v4';
+const CACHE = 'mywords-v6';
 // مسارات نسبية: بتشتغل سواء الموقع على /mywords/ أو على اسم الريبو في GitHub Pages
 const FILES = ['./', './index.html', './mywords_data.js', './grammar_content.js', './manifest.json'];
 
